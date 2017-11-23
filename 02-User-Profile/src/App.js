@@ -15,6 +15,15 @@ class App extends Component {
     this.props.auth.logout();
   }
 
+  componentWillMount() {
+    const { isAuthenticated } = this.props.auth;
+    console.log(`App componentWillMount isAuthenticated() ${isAuthenticated()} this.props.location ${this.props.location.pathname}`)
+    // console.log(`App componentWillMount isAuthenticated() ${isAuthenticated()} this.props.location ${JSON.stringify(this.props.location)}`)
+    if (!isAuthenticated() && this.props.location.pathname !== "/callback"){
+      this.props.auth.login()
+    }
+  }
+
   render() {
     const { isAuthenticated } = this.props.auth;
 

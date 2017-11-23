@@ -1,5 +1,6 @@
 import history from '../history';
 import auth0 from 'auth0-js';
+import qs from 'qs';
 import { AUTH_CONFIG } from './auth0-variables';
 
 export default class Auth {
@@ -20,12 +21,37 @@ export default class Auth {
   }
 
   login() {
-    this.auth0.authorize();
+    let options = {
+      nonce: 'koula',
+      state: 'taratata!!!',
+      domain: AUTH_CONFIG.domain,
+      clientID: AUTH_CONFIG.clientId,
+      redirectUri: AUTH_CONFIG.callbackUrl,
+      audience: `https://${AUTH_CONFIG.domain}/userinfo`,
+      responseType: 'token id_token',
+      scope: 'openid'
+    }
+    let options2 = {
+      nonce: 'koula',
+      state: 'taratata!!!',
+    }
+    let rurl = this.auth0.client.buildAuthorizeUrl(options)
+    // this.auth0.authorize();
+    // this.auth0.authorize({redirectUri: rurl})
+    this.auth0.authorize(options2)
   }
 
   handleAuthentication() {
-    this.auth0.parseHash((err, authResult) => {
+    let hashStr = global.window.location.hash
+    hashStr = hashStr.replace(/^#?\/?/, '');
+    let parsedQs = qs.parse(hashStr);
+    console.log(`handleAuthentication hashStr: ${hashStr}`)
+    console.log(`handleAuthentication qs.state: ${parsedQs.state ? JSON.stringify(parsedQs.state,null,2) : parsedQs.state}`)
+    //let options = {state: 'kaka'}
+    let options = {}
+    this.auth0.parseHash(options, (err, authResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
+        console.log(`handleAuthentication options.state: ${JSON.stringify(options.state,null,2)}`)
         this.setSession(authResult);
         history.replace('/home');
       } else if (err) {
@@ -56,7 +82,7 @@ export default class Auth {
   }
 
   isAuthenticated() {
-    // Check whether the current time is past the 
+    // Check whether the current time is past the
     // access token's expiry time
     let expiresAt = JSON.parse(localStorage.getItem('expires_at'));
     return new Date().getTime() < expiresAt;
