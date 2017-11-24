@@ -1,6 +1,6 @@
 import history from '../history';
 import auth0 from 'auth0-js';
-import qs from 'qs';
+// import qs from 'qs';
 import { AUTH_CONFIG } from './auth0-variables';
 
 export default class Auth {
@@ -24,34 +24,14 @@ export default class Auth {
     let options = {
       nonce: 'koula',
       state: 'taratata!!!',
-      domain: AUTH_CONFIG.domain,
-      clientID: AUTH_CONFIG.clientId,
-      redirectUri: AUTH_CONFIG.callbackUrl,
-      audience: `https://${AUTH_CONFIG.domain}/userinfo`,
-      responseType: 'token id_token',
-      scope: 'openid'
     }
-    let options2 = {
-      nonce: 'koula',
-      state: 'taratata!!!',
-    }
-    let rurl = this.auth0.client.buildAuthorizeUrl(options)
-    // this.auth0.authorize();
-    // this.auth0.authorize({redirectUri: rurl})
-    this.auth0.authorize(options2)
+    this.auth0.authorize(options)
   }
 
   handleAuthentication() {
-    let hashStr = global.window.location.hash
-    hashStr = hashStr.replace(/^#?\/?/, '');
-    let parsedQs = qs.parse(hashStr);
-    console.log(`handleAuthentication hashStr: ${hashStr}`)
-    console.log(`handleAuthentication qs.state: ${parsedQs.state ? JSON.stringify(parsedQs.state,null,2) : parsedQs.state}`)
-    //let options = {state: 'kaka'}
-    let options = {}
-    this.auth0.parseHash(options, (err, authResult) => {
+    this.auth0.parseHash((err, authResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
-        console.log(`handleAuthentication options.state: ${JSON.stringify(options.state,null,2)}`)
+        console.log(`handleAuthentication authResult.state: ${authResult.state ? JSON.stringify(authResult.state,null,2) : authResult.state}`)
         this.setSession(authResult);
         history.replace('/home');
       } else if (err) {
